@@ -6,8 +6,8 @@ train = pd.read_csv('./data/input/train.csv')
 test  = pd.read_csv('./data/input/test.csv')
 
 FEATS = [
-    'user_id',
-    'item_id',
+    # 'user_id',
+    # 'item_id',
     # 'timestamp',
     # 'age',
     'gender',
@@ -34,9 +34,9 @@ FEATS = [
     ]
 LABEL = 'rating'
 
-MAX_SAMPLE = 1000
-x_train, y_train = np.array(train[FEATS])[:MAX_SAMPLE], np.array(train[LABEL])[:MAX_SAMPLE]
-x_test,  y_test  = np.array(test[FEATS])[:MAX_SAMPLE],  np.array(test[LABEL])[:MAX_SAMPLE]
+slicing = slice(1, 1000)
+x_train, y_train = np.array(train[FEATS])[slicing], np.array(train[LABEL])[slicing]
+x_test,  y_test  = np.array(test[FEATS])[slicing],  np.array(test[LABEL])[slicing]
 
 def fm(x, w_0, w, v):
     n = len(FEATS)
@@ -85,7 +85,7 @@ def loss_grad_v_i_f(x, y, w_0, w, v, i, f, norm_w_0, norm_w, norm_v):
 
 def eval(epoch, iteration, x_train, y_train, x_test, y_test, model, params):
     def rmse(a, b):
-        return np.mean(np.sqrt((a - b) ** 2))
+        return np.sqrt(np.mean( (a - b) ** 2) )
     w_0, w, v = params
     rmse_train = rmse(y_train, model(x_train, w_0, w, v))
     rmse_test  = rmse(y_test,  model(x_test,  w_0, w, v))
