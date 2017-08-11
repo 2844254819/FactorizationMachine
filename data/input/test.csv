@@ -1,4 +1,4 @@
-user_id,item_id,rating,timestamp,age,gender,occupation,release_date,Action,Adventure,Animation,Childrens,Comedy,Crime,Documentary,Drama,Fantasy,Film_Noir,Horror,Musical,Mystery,Romance,Sci_Fi,Thriller,War,Western
+user,item,rating,timestamp,age,gender,occupation,release_date,Action,Adventure,Animation,Childrens,Comedy,Crime,Documentary,Drama,Fantasy,Film_Noir,Horror,Musical,Mystery,Romance,Sci_Fi,Thriller,War,Western
 1,6,5,887431973,24,1,20,-9999,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0
 1,10,3,875693118,24,1,20,-9999,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0
 1,12,5,878542960,24,1,20,-9999,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0

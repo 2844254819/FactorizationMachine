@@ -5,9 +5,9 @@ import datetime
 
 occupation_dict = {'administrator':1, 'artist':2, 'doctor':3, 'educator':4, 'engineer':5, 'entertainment':6, 'executive':7, 'healthcare':8, 'homemaker':9, 'lawyer':10, 'librarian':11, 'marketing':12, 'none':13, 'other':14, 'programmer':15, 'retired':16, 'salesman':17, 'scientist':18, 'student':19, 'technician':20, 'writer':21} 
 
-rate_cols = ['user_id', 'item_id', 'rating', 'timestamp']
-user_cols = ['user_id', 'age', 'gender', 'occupation', 'zip_code']
-item_cols = ['item_id', 'movie_title', 'release_date', 'video_release_date', 'IMDb_URL', 'unknown', 'Action', 'Adventure', 'Animation', 'Childrens', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film_Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci_Fi', 'Thriller', 'War', 'Western']
+rate_cols = ['user', 'item', 'rating', 'timestamp']
+user_cols = ['user', 'age', 'gender', 'occupation', 'zip_code']
+item_cols = ['item', 'movie_title', 'release_date', 'video_release_date', 'IMDb_URL', 'unknown', 'Action', 'Adventure', 'Animation', 'Childrens', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film_Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci_Fi', 'Thriller', 'War', 'Western']
 
 train_paths = ['./data/raw/ml-100k/u%d.base' % i for i in range(1,3)]
 test_paths  = ['./data/raw/ml-100k/u%d.test' % i for i in range(1,3)]
@@ -19,15 +19,15 @@ def read_rate(rate_paths):
     item = pd.read_csv(item_path, sep='|', names=item_cols)
     rate = pd.concat([pd.read_csv(i, sep='\t', names=rate_cols) for i in rate_paths])
 
-    rate = rate.join(user.set_index('user_id'), on='user_id', how='left')
-    rate = rate.join(item.set_index('item_id'), on='item_id', how='left')
+    rate = rate.join(user.set_index('user'), on='user', how='left')
+    rate = rate.join(item.set_index('item'), on='item', how='left')
 
     rate['gender'] = rate['gender'].map({'F':0, 'M':1})
     rate['occupation'] = rate['occupation'].map(occupation_dict)
     rate['release_date'] = rate['release_date'].map(lambda x : int(datetime.datetime.strptime(x, '%d-%b-%Y')) if type(x) == str() else -9999)
     rate = rate[[
-        'user_id',
-        'item_id',
+        'user',
+        'item',
         'rating',
         'timestamp',
         'age',

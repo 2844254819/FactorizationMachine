@@ -6,8 +6,8 @@ train = pd.read_csv('./data/input/train.csv')
 test  = pd.read_csv('./data/input/test.csv')
 
 FEATS = [
-    # 'user_id',
-    # 'item_id',
+    # 'user',
+    # 'item',
     # 'timestamp',
     # 'age',
     'gender',
@@ -34,9 +34,10 @@ FEATS = [
     ]
 LABEL = 'rating'
 
-slicing = slice(1, 1000)
-x_train, y_train = np.array(train[FEATS])[slicing], np.array(train[LABEL])[slicing]
-x_test,  y_test  = np.array(test[FEATS])[slicing],  np.array(test[LABEL])[slicing]
+slice_train = slice(1, 1000)
+slice_test  = slice(1, 200)
+x_train, y_train = np.array(train[FEATS])[slice_train], np.array(train[LABEL])[slice_train]
+x_test,  y_test  = np.array(test[FEATS])[slice_test],   np.array(test[LABEL])[slice_test]
 
 def fm(x, w_0, w, v):
     n = len(FEATS)
@@ -66,22 +67,22 @@ def fm_grad_v_i_f(x, w_0, w, v, i, f):
         a += v[j][f] * x[j]
     return x[i] * a - v[i][f] * x[i] ** 2
 
-def loss(x_train, y_train, w_0, w, v, norm_w_0, norm_w, norm_v):
+def loss(x_train, y_train, w_0, w, v, reg_w_0, reg_w, reg_v):
     return np.mean(
         (model(x_train, w_0, w, v) - y_train) ** 2 
         # normlization
-        + w_0 * norm_w_0 ** 2 
-        + np.sum(w * norm_w ** 2) 
-        + np.sum(v * norm_v ** 2))
+        + w_0 * reg_w_0 ** 2 
+        + np.sum(w * reg_w ** 2) 
+        + np.sum(v * reg_v ** 2))
 
-def loss_grad_w_0(x, y, w_0, w, v, norm_w_0, norm_w, norm_v):
-    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_w_0(x, w_0, w, v) + 2 * norm_w_0 * w_0
+def loss_grad_w_0(x, y, w_0, w, v, reg_w_0, reg_w, reg_v):
+    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_w_0(x, w_0, w, v) + 2 * reg_w_0 * w_0
 
-def loss_grad_w_i(x, y, w_0, w, v, i, norm_w_0, norm_w, norm_v):
-    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_w_i(x, w_0, w, v, i) + 2 * norm_w[i] * w[i]
+def loss_grad_w_i(x, y, w_0, w, v, i, reg_w_0, reg_w, reg_v):
+    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_w_i(x, w_0, w, v, i) + 2 * reg_w[i] * w[i]
 
-def loss_grad_v_i_f(x, y, w_0, w, v, i, f, norm_w_0, norm_w, norm_v):
-    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_v_i_f(x, w_0, w, v, i, f) + 2 * norm_v[i][f] * v[i][f]
+def loss_grad_v_i_f(x, y, w_0, w, v, i, f, reg_w_0, reg_w, reg_v):
+    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_v_i_f(x, w_0, w, v, i, f) + 2 * reg_v[i][f] * v[i][f]
 
 def eval(epoch, iteration, x_train, y_train, x_test, y_test, model, params):
     def rmse(a, b):
@@ -89,19 +90,19 @@ def eval(epoch, iteration, x_train, y_train, x_test, y_test, model, params):
     w_0, w, v = params
     rmse_train = rmse(y_train, model(x_train, w_0, w, v))
     rmse_test  = rmse(y_test,  model(x_test,  w_0, w, v))
-    loss_train = loss(x_train,  y_train, w_0, w, v, norm_w_0, norm_w, norm_v)
-    print('epoch:%d iter:%d train loss:%.2f train rmse:%.2f test rmse:%.2f' % (epoch, iteration, loss_train, rmse_train, rmse_test))
+    loss_train = loss(x_train,  y_train, w_0, w, v, reg_w_0, reg_w, reg_v)
+    print('epoch:%d iter:%d train loss:%.4f train rmse:%.4f test rmse:%.4f' % (epoch, iteration, loss_train, rmse_train, rmse_test))
 
-eta = 1e-5 # learning rate
-k = 5 # dim of factorization
-sigma = 0.5
+eta = 1e-3 # learning rate
+k = 3 # dim of factorization
+sigma = 1
 n = len(FEATS)
 w_0 = 0
 w = np.zeros((n))
 v = np.ones((n, k))
-norm_w_0 = np.random.normal(0, sigma, 1)
-norm_w   = np.random.normal(0, sigma, n)
-norm_v   = np.random.normal(0, sigma, (n, k))
+reg_w_0 = np.random.normal(0, sigma, 1)
+reg_w   = np.random.normal(0, sigma, n)
+reg_v   = np.random.normal(0, sigma, (n, k))
 
 
 for epoch in range(50):
@@ -111,17 +112,17 @@ for epoch in range(50):
         y = y_train[it]
 
         # w_0train
-        w -= eta * loss_grad_w_0(x, y, w_0, w, v, norm_w_0, norm_w, norm_v)
-        # print('loss w_0:{}'.format(loss_grad_w_0(x, y, w_0, w, v, norm_w_0, norm_w, norm_v)))
+        w -= eta * loss_grad_w_0(x, y, w_0, w, v, reg_w_0, reg_w, reg_v)
+        # print('loss w_0:{}'.format(loss_grad_w_0(x, y, w_0, w, v, reg_w_0, reg_w, reg_v)))
 
         # w_i
         for i in range(w.shape[0]):
             if x[i] != 0:
-                w[i] -= eta * loss_grad_w_i(x, y, w_0, w, v, i, norm_w_0, norm_w, norm_v)
-                # print('loss w[{}]:{}'.format(i, loss_grad_w_i(x, y, w_0, w, v, i, norm_w_0, norm_w, norm_v)))
+                w[i] -= eta * loss_grad_w_i(x, y, w_0, w, v, i, reg_w_0, reg_w, reg_v)
+                # print('loss w[{}]:{}'.format(i, loss_grad_w_i(x, y, w_0, w, v, i, reg_w_0, reg_w, reg_v)))
 
                 # v_{i,f}
                 for j in range(v.shape[1]):
-                    v[i][j] -= eta * loss_grad_v_i_f(x, y, w_0, w, v, i, j, norm_w_0, norm_w, norm_v)
+                    v[i][j] -= eta * loss_grad_v_i_f(x, y, w_0, w, v, i, j, reg_w_0, reg_w, reg_v)
 
 
