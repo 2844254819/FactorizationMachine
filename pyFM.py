@@ -61,4 +61,3 @@ fm = pylibfm.FM(num_iter=20, verbose=True, task="regression", initial_learning_r
 fm.fit(X_train, y_train)
 
 print("Test MSE: %.4f" % mean_squared_error(y_test, fm.predict(X_test)))
-
