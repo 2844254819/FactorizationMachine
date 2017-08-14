@@ -1,6 +1,6 @@
 # FactorizationMachine
 
-demo with movelens dataset
+a simple Factorization Machine (regression) demo with movelens rating datasets.
 
 ## Dataset
 
