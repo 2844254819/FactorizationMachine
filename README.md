@@ -1,5 +1,6 @@
 # FactorizationMachine
-demo with IMDB dataset
+
+demo with movelens dataset
 
 ## Dataset
 
