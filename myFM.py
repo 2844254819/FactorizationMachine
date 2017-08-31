@@ -64,13 +64,13 @@ def model(X, w_0, w, v):
         y = fm(x, w_0, w, v)
     return np.array(y)
 
-def fm_grad_w_0(x, w_0, w, v):
+def grad_fm_w_0(x, w_0, w, v):
     return 1
 
-def fm_grad_w_i(x, w_0, w, v, i):
+def grad_fm_w_i(x, w_0, w, v, i):
     return x[i]
 
-def fm_grad_v_i_f(x, w_0, w, v, i, f):
+def grad_fm_v_i_f(x, w_0, w, v, i, f):
     n = len(FEATS)
     a = 0
     for j in range(n):
@@ -92,14 +92,14 @@ def loss(x, y, w_0, w, v, reg_w_0, reg_w, reg_v):
         + np.sum(w * reg_w ** 2)  \
         + np.sum(v * reg_v ** 2)
 
-def loss_grad_w_0(x, y, w_0, w, v, reg_w_0, reg_w, reg_v):
-    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_w_0(x, w_0, w, v) + 2 * reg_w_0 * w_0
+def grad_loss_w_0(x, y, w_0, w, v, reg_w_0, reg_w, reg_v):
+    return (2 * (fm(x, w_0, w, v) - y)) * grad_fm_w_0(x, w_0, w, v) + 2 * reg_w_0 * w_0
 
-def loss_grad_w_i(x, y, w_0, w, v, i, reg_w_0, reg_w, reg_v):
-    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_w_i(x, w_0, w, v, i) + 2 * reg_w[i] * w[i]
+def grad_loss_w_i(x, y, w_0, w, v, i, reg_w_0, reg_w, reg_v):
+    return (2 * (fm(x, w_0, w, v) - y)) * grad_fm_w_i(x, w_0, w, v, i) + 2 * reg_w[i] * w[i]
 
-def loss_grad_v_i_f(x, y, w_0, w, v, i, f, reg_w_0, reg_w, reg_v):
-    return (2 * (fm(x, w_0, w, v) - y)) * fm_grad_v_i_f(x, w_0, w, v, i, f) + 2 * reg_v[i][f] * v[i][f]
+def grad_loss_v_i_f(x, y, w_0, w, v, i, f, reg_w_0, reg_w, reg_v):
+    return (2 * (fm(x, w_0, w, v) - y)) * grad_fm_v_i_f(x, w_0, w, v, i, f) + 2 * reg_v[i][f] * v[i][f]
 
 def eval(epoch, batch, X_train, y_train, X_test, y_test, model, params):
     def mse(a, b):
@@ -139,16 +139,16 @@ for epoch in range(num_epochs):
             x = X_train[i_batch * n_batch + it]
             y = y_train[i_batch * n_batch + it]
             # w_0
-            delta_w_0[i_batch] = loss_grad_w_0(x, y, w_0, w, v, reg_w_0, reg_w, reg_v)
+            delta_w_0[i_batch] = grad_loss_w_0(x, y, w_0, w, v, reg_w_0, reg_w, reg_v)
 
             # w_i
             for i in range(w.shape[0]):
                 if x[i] != 0:
-                    delta_w[i][i_batch] = loss_grad_w_i(x, y, w_0, w, v, i, reg_w_0, reg_w, reg_v)
+                    delta_w[i][i_batch] = grad_loss_w_i(x, y, w_0, w, v, i, reg_w_0, reg_w, reg_v)
 
                     # v_{i,f}
                     for j in range(v.shape[1]):
-                        delta_v[i][j][i_batch] = loss_grad_v_i_f(x, y, w_0, w, v, i, j, reg_w_0, reg_w, reg_v)
+                        delta_v[i][j][i_batch] = grad_loss_v_i_f(x, y, w_0, w, v, i, j, reg_w_0, reg_w, reg_v)
             
         VERBOSE = False
         if VERBOSE:
